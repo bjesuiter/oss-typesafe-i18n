@@ -2,6 +2,18 @@
 
 # Version 5
 
+## 5.27.1-bjesuiter.2 (2026-10-13)
+
+### Changed
+
+* Compile locale files with the native TypeScript 7.0.2 compiler instead of the legacy compiler API. Requires Node.js >= 16.20.0.
+* Reduce watcher debounce to 25 ms and start the native compiler directly, with the public CLI launcher as a fallback.
+
+### Fixed
+
+* Process edits made immediately after or during generation. Ignore generated writes by their content and modification time instead of suppressing all input for one second.
+* Test rapid edits, reverting formatter changes, and recreating a deleted formatter file in the packed CLI.
+
 ## 5.27.1-bjesuiter.1 (2026-10-13)
 
 ### Fixed

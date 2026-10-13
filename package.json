@@ -1,6 +1,6 @@
 {
 	"name": "@bjesuiter/typesafe-i18n",
-	"version": "5.27.1-bjesuiter.1",
+	"version": "5.27.1-bjesuiter.2",
 	"description": "A fully type-safe and lightweight internationalization library for all your TypeScript and JavaScript projects.",
 	"author": "ivanhofer",
 	"homepage": "https://github.com/codingcommons/typesafe-i18n",
@@ -185,5 +185,8 @@
 	"packageManager": "pnpm@8.6.7",
 	"dependencies": {
 		"typescript-native": "npm:typescript@7.0.2"
+	},
+	"engines": {
+		"node": ">=16.20.0"
 	}
 }
