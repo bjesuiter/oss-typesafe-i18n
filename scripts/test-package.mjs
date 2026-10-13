@@ -26,8 +26,8 @@ function run(command, args, cwd) {
 	return result.stdout
 }
 
-async function waitFor(check) {
-	const deadline = Date.now() + 20_000
+async function waitFor(check, timeoutMs = 20_000) {
+	const deadline = Date.now() + timeoutMs
 	while (Date.now() < deadline) {
 		assert.equal(watcher.exitCode, null, log)
 		if (await check()) return
@@ -109,10 +109,26 @@ try {
 		log += error.message
 	})
 	await waitFor(() => log.includes('all files are up to date'))
-	// The generator ignores changes for one second after writing its own output.
-	await setTimeout(1500)
 	await writeFile(locale, localeSource("{ HELLO: hello, IMPORTED: note, COUNT: '{count:number} items' }"))
-	await waitFor(async () => /count: number/.test(await readFile(types, 'utf8')))
+	await waitFor(async () => /count: number/.test(await readFile(types, 'utf8')), 5000)
+	const rounds = () => log.split('files were modified').length
+	const previousRounds = rounds()
+	await writeFile(locale, localeSource("{ HELLO: hello, IMPORTED: note, MIDDLE: 'Middle {value:number}' }"))
+	await waitFor(() => rounds() > previousRounds, 5000)
+	await writeFile(locale, localeSource("{ HELLO: hello, IMPORTED: note, LATEST: 'Latest {final:string}' }"))
+	await waitFor(async () => /final: string/.test(await readFile(types, 'utf8')), 5000)
+	await setTimeout(300)
+	const formatters = join(fixture, 'src/i18n/formatters.ts')
+	const originalFormatters = await readFile(formatters, 'utf8')
+	const completions = () => log.split('all files are up to date').length
+	let completed = completions()
+	await writeFile(formatters, originalFormatters + '\n// User edit\n')
+	await waitFor(() => completions() > completed, 5000)
+	completed = completions()
+	await writeFile(formatters, originalFormatters)
+	await waitFor(() => completions() > completed, 5000)
+	await rm(formatters)
+	await waitFor(async () => (await readFile(formatters, 'utf8').catch(() => '')) === originalFormatters, 5000)
 	run(process.execPath, [join(fixture, 'node_modules/typescript/bin/tsc'), '-p', 'tsconfig.json'], fixture)
 	await mkdir(join(fixture, 'src/js/en'), { recursive: true })
 	await writeFile(join(fixture, 'src/js/en/index.js'), "module.exports = { JAVASCRIPT: 'JS {amount:number}' }\n")

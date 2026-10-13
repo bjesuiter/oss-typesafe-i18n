@@ -9,7 +9,7 @@ import { getAllLocales } from '../../shared/src/file.utils.mjs'
 import { generate } from './generate-files.mjs'
 import { configureOutputHandler, shouldGenerateJsDoc } from './output-handler.mjs'
 import { parseLanguageFile } from './parse-language-file.mjs'
-import { createPathIfNotExits } from './utils/file.utils.mjs'
+import { createPathIfNotExits, isOwnWrite } from './utils/file.utils.mjs'
 import { parseTypescriptVersion, runCommandAfterGenerator, type TypescriptVersion } from './utils/generator.utils.mjs'
 import { createLogger, type Logger } from './utils/logger.mjs'
 import { findAllNamespacesForLocale } from './utils/namespaces.utils.mjs'
@@ -48,54 +48,70 @@ const getBaseTranslations = async (
 }
 
 const parseAndGenerate = async (config: GeneratorConfigWithDefaultValues, version: TypescriptVersion) => {
-	if (disableChangeDetection) return
-
-	const currentDebounceCounter = debounceCounter
-	disableChangeDetection = true
-
-	if (firstRunOfGenerator) {
-		firstRunOfGenerator = false
-	} else {
-		logger.info('files were modified => looking for changes ...')
+	if (generating) {
+		rerun = true
+		return
 	}
+	generating = true
 
-	const { baseLocale, outputPath, runAfterGenerator, outputFormat } = config
-
-	const locales = await getAllLocales(fs, outputPath, outputFormat)
-	const namespaces = findAllNamespacesForLocale(baseLocale, outputPath)
-
-	const firstLaunchOfGenerator = !locales.length
-
-	const translations = await getBaseTranslations(config, namespaces)
-
-	await generate(translations, { ...config, baseLocale }, version, logger, firstLaunchOfGenerator, locales, namespaces)
-
-	if (firstLaunchOfGenerator) {
-		let message =
-			'Visit https://github.com/ivanhofer/typesafe-i18n/tree/main/packages/generator#options and configure `typesafe-i18n` depending on your project-setup.'
-		if (!config.adapter) {
-			message += " You probably want to set at least the 'adapter' option."
+	try {
+		if (firstRunOfGenerator) {
+			firstRunOfGenerator = false
+		} else {
+			logger.info('files were modified => looking for changes ...')
 		}
 
-		logger.warn(message)
+		const { baseLocale, outputPath, runAfterGenerator, outputFormat } = config
+
+		const locales = await getAllLocales(fs, outputPath, outputFormat)
+		const namespaces = findAllNamespacesForLocale(baseLocale, outputPath)
+
+		const firstLaunchOfGenerator = !locales.length
+
+		const translations = await getBaseTranslations(config, namespaces)
+
+		await generate(
+			translations,
+			{ ...config, baseLocale },
+			version,
+			logger,
+			firstLaunchOfGenerator,
+			locales,
+			namespaces,
+		)
+
+		if (firstLaunchOfGenerator) {
+			let message =
+				'Visit https://github.com/ivanhofer/typesafe-i18n/tree/main/packages/generator#options and configure `typesafe-i18n` depending on your project-setup.'
+			if (!config.adapter) {
+				message += " You probably want to set at least the 'adapter' option."
+			}
+
+			logger.warn(message)
+		}
+
+		runAfterGenerator && runCommandAfterGenerator(logger, runAfterGenerator)
+
+		logger.info('... all files are up to date')
+	} finally {
+		generating = false
+		if (rerun) {
+			rerun = false
+			debounce(() => parseAndGenerate(config, version))
+		}
 	}
-
-	runAfterGenerator && runCommandAfterGenerator(logger, runAfterGenerator)
-
-	logger.info('... all files are up to date')
-
-	setTimeout(() => currentDebounceCounter === debounceCounter && (disableChangeDetection = false), 1000)
 }
 
 let debounceCounter = 0
-let disableChangeDetection = false
+let generating = false
+let rerun = false
 
 const debounce = (callback: () => void) =>
 	setTimeout(
 		(i) => {
 			i === debounceCounter && callback()
 		},
-		100,
+		25,
 		++debounceCounter,
 	)
 
@@ -117,7 +133,12 @@ export const startGenerator = async (config?: GeneratorConfig, watchFiles = true
 
 	await createPathIfNotExits(outputPath)
 
-	watchFiles && watch(outputPath).on('all', () => !disableChangeDetection && debounce(onChange))
+	if (watchFiles) {
+		watch(outputPath, { ignoreInitial: true }).on('all', async (_event, file) => {
+			if (await isOwnWrite(file)) return
+			debounce(onChange)
+		})
+	}
 
 	logger.info(
 		`generating files for ${

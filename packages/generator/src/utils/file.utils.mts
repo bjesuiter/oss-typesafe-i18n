@@ -7,6 +7,21 @@ import { logger } from './logger.mjs'
 
 const { readFile: read, readdir, writeFile: write, mkdir, stat, rm } = fsPromises
 
+const generatedWrites = new Map<string, { content: string; done: Promise<number> }>()
+
+export const isOwnWrite = async (file: string): Promise<boolean> => {
+	const entry = generatedWrites.get(resolve(file))
+	if (!entry) return false
+
+	try {
+		const writtenAt = await entry.done
+		const [content, metadata] = await Promise.all([read(file), stat(file)])
+		return metadata.mtimeMs === writtenAt && content.toString() === entry.content
+	} catch (_error) {
+		return false
+	}
+}
+
 export const readFile = async (file: string, createPath = false): Promise<string> => {
 	try {
 		if (createPath) {
@@ -67,7 +82,16 @@ const getFileName = (path: string, file: string) => {
 export const writeNewFile = async (path: string, file: string, content: string): Promise<void> => {
 	await createPathIfNotExits(path)
 
-	await writeFile(getFileName(path, file), content)
+	const filePath = getFileName(path, file)
+	const done = writeFile(filePath, content).then(async () => {
+		try {
+			return (await stat(filePath)).mtimeMs
+		} catch (_error) {
+			return Number.NaN
+		}
+	})
+	generatedWrites.set(resolve(filePath), { content, done })
+	await done
 
 	logger.info(`generated file: '${path}${path.endsWith('/') ? '' : '/'}${file}'`)
 }

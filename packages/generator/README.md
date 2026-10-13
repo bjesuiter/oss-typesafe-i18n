@@ -18,9 +18,9 @@ In order to get get full typesafety for your locales, you can start the generato
 
 The native compiler trial requires Node.js >= 16.20.0.
 
-This working-tree experiment uses its own pinned TypeScript 7.0.2 CLI to compile locale files with `--noCheck`. It does not use the experimental TypeScript API. The generated translation types are still checked by your project. Each locale or namespace compilation starts a separate native compiler process.
+The generator uses its own pinned TypeScript 7.0.2 CLI to compile locale files with `--noCheck`. It does not use the experimental TypeScript API. The generated translation types are still checked by your project. Each locale or namespace compilation starts a separate native compiler process. The generator uses the pinned package's platform resolver to start the native binary directly, with the public Node CLI launcher as a fallback.
 
-The experiment is not included in the published `5.27.1-bjesuiter.1`, which uses TypeScript 5.9.3. Benchmark with `pnpm benchmark:generator --baseline <published-cli.mjs> --locales <app-i18n-directory> --output <results.json>` after building. The benchmark compares byte-identical generated files, five watcher starts, and five updates. It excludes the existing one-second event suppression period and includes the 100 ms file-event debounce.
+The native compiler implementation is not included in the published `5.27.1-bjesuiter.1`, which uses TypeScript 5.9.3. Benchmark with `pnpm benchmark:generator --baseline <published-cli.mjs> --locales <app-i18n-directory> --output <results.json>` after building. The benchmark compares byte-identical generated files, five watcher starts, and five updates. It excludes idle time between edits and includes each implementation's file-event debounce. The watcher uses 25 ms debounce, ignores its own writes, and queues edits received during generation instead of suppressing input for one second.
 
  > The generator will create a different output depending on your TypeScript version. Older versions don't support all the features `typesafe-i18n` need to provide you with the best types. Make sure to use a TypeScript version `> 4.1.x` to benefit from all the typechecking features.
 
