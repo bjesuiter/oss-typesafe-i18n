@@ -53,9 +53,19 @@ try {
 	const locale = join(fixture, 'src/i18n/en/index.ts')
 	const types = join(fixture, 'src/i18n/i18n-types.ts')
 	await writeFile(types, 'export type BaseTranslation = Record<string, string>\n')
+	await writeFile(join(fixture, 'src/words.json'), JSON.stringify({ note: 'Imported {id:number}' }))
+	await writeFile(
+		join(fixture, 'src/messages.ts'),
+		"import * as words from './words.json'\nexport enum Prefix { Hello = 'Hello' }\nexport const hello = `${Prefix.Hello} {name:string}!`\nexport const note = words.note\n",
+	)
+	await mkdir(join(fixture, 'src/i18n/en/account'))
+	await writeFile(
+		join(fixture, 'src/i18n/en/account/index.ts'),
+		"import type { BaseTranslation } from '../../i18n-types'\nexport default { STATUS: 'Status {enabled:boolean}' } satisfies BaseTranslation\n",
+	)
 	const localeSource = (messages) =>
-		`import type { BaseTranslation } from '../i18n-types'\nconst en = ${messages} satisfies BaseTranslation\nexport default en\n`
-	await writeFile(locale, localeSource("{ HELLO: 'Hello {name:string}!' }"))
+		`import type { BaseTranslation } from '../i18n-types'\nimport { hello, note } from '../../messages'\nconst en = ${messages} satisfies BaseTranslation\nexport default en\n`
+	await writeFile(locale, localeSource('{ HELLO: hello, IMPORTED: note }'))
 	run('npm', ['install', '--ignore-scripts', '--no-package-lock', '--no-audit', '--no-fund'], fixture)
 	assert.equal(
 		JSON.parse(await readFile(join(fixture, 'node_modules/typescript/package.json'), 'utf8')).version,
@@ -64,7 +74,10 @@ try {
 	const cli = join(fixture, 'node_modules/typesafe-i18n/cli/typesafe-i18n.mjs')
 	const output = run(process.execPath, [cli, '--no-watch'], fixture)
 	assert.match(output, /generating files completed/)
+	assert.match(output, /TypeScript version: '7\.0\.x'/)
 	assert.match(await readFile(types, 'utf8'), /name: string/)
+	assert.match(await readFile(types, 'utf8'), /id: number/)
+	assert.match(await readFile(types, 'utf8'), /enabled: boolean/)
 	await writeFile(
 		join(fixture, 'tsconfig.json'),
 		JSON.stringify({
@@ -75,13 +88,14 @@ try {
 				target: 'ES2022',
 				module: 'ESNext',
 				moduleResolution: 'Bundler',
+				resolveJsonModule: true,
 			},
 			include: ['src'],
 		}),
 	)
 	await writeFile(
 		join(fixture, 'src/check.ts'),
-		"import type { TranslationFunctions } from './i18n/i18n-types'\ndeclare const LL: TranslationFunctions\nLL.HELLO({ name: 'Ada' })\n// @ts-expect-error The generated argument must remain a string.\nLL.HELLO({ name: 42 })\n",
+		"import type { TranslationFunctions } from './i18n/i18n-types'\ndeclare const LL: TranslationFunctions\nLL.HELLO({ name: 'Ada' })\nLL.IMPORTED({ id: 42 })\nLL.account.STATUS({ enabled: true })\n// @ts-expect-error The generated argument must remain a string.\nLL.HELLO({ name: 42 })\n// @ts-expect-error Namespace arguments must retain their types.\nLL.account.STATUS({ enabled: 'yes' })\n",
 	)
 	run(process.execPath, [join(fixture, 'node_modules/typescript/bin/tsc'), '-p', 'tsconfig.json'], fixture)
 	watcher = spawn(process.execPath, [cli], { cwd: fixture, stdio: ['ignore', 'pipe', 'pipe'] })
@@ -97,12 +111,22 @@ try {
 	await waitFor(() => log.includes('all files are up to date'))
 	// The generator ignores changes for one second after writing its own output.
 	await setTimeout(1500)
-	await writeFile(locale, localeSource("{ HELLO: 'Hello {name:string}!', COUNT: '{count:number} items' }"))
+	await writeFile(locale, localeSource("{ HELLO: hello, IMPORTED: note, COUNT: '{count:number} items' }"))
 	await waitFor(async () => /count: number/.test(await readFile(types, 'utf8')))
 	run(process.execPath, [join(fixture, 'node_modules/typescript/bin/tsc'), '-p', 'tsconfig.json'], fixture)
-	console.log('Packed CLI generates typed messages and watches changes alongside TypeScript 7.0.2.')
+	await mkdir(join(fixture, 'src/js/en'), { recursive: true })
+	await writeFile(join(fixture, 'src/js/en/index.js'), "module.exports = { JAVASCRIPT: 'JS {amount:number}' }\n")
+	await writeFile(
+		join(fixture, '.typesafe-i18n.json'),
+		JSON.stringify({ outputPath: './src/js', outputFormat: 'JavaScript', baseLocale: 'en' }),
+	)
+	run(process.execPath, [cli, '--no-watch'], fixture)
+	assert.match(await readFile(join(fixture, 'src/js/i18n-types.d.ts'), 'utf8'), /amount: number/)
+	console.log(
+		'Packed TS7 CLI passes imports, enums, JSON, namespaces, argument types, JavaScript input, and watched changes.',
+	)
 } finally {
-	if (watcher && watcher.exitCode === null) {
+	if (watcher && watcher.exitCode === null && watcher.signalCode === null) {
 		const stopped = new Promise((resolve) => watcher.once('close', resolve))
 		watcher.kill()
 		await stopped

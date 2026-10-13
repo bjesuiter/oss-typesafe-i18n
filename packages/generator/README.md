@@ -16,9 +16,11 @@ npm install typesafe-i18n
 
 In order to get get full typesafety for your locales, you can start the generator during development. The generator listens for changes you make to your [base locale file](https://github.com/ivanhofer/typesafe-i18n/tree/main/packages/runtime#dictionary) and creates the corresponding TypeScript types.
 
-Make sure you have installed `node` version `> 12.x` and are using a `typescript` version `>= 3.5.1`.
+The native compiler trial requires Node.js >= 16.20.0.
 
-The generator uses its own pinned TypeScript 5.9.3 compiler API to read locale files. Your project can use TypeScript 7 without providing the legacy JavaScript compiler API. Locale files must use syntax supported by TypeScript 5.9.3.
+This working-tree experiment uses its own pinned TypeScript 7.0.2 CLI to compile locale files with `--noCheck`. It does not use the experimental TypeScript API. The generated translation types are still checked by your project. Each locale or namespace compilation starts a separate native compiler process.
+
+The experiment is not included in the published `5.27.1-bjesuiter.1`, which uses TypeScript 5.9.3. Benchmark with `pnpm benchmark:generator --baseline <published-cli.mjs> --locales <app-i18n-directory> --output <results.json>` after building. The benchmark compares byte-identical generated files, five watcher starts, and five updates. It excludes the existing one-second event suppression period and includes the 100 ms file-event debounce.
 
  > The generator will create a different output depending on your TypeScript version. Older versions don't support all the features `typesafe-i18n` need to provide you with the best types. Make sure to use a TypeScript version `> 4.1.x` to benefit from all the typechecking features.
 

@@ -1,7 +1,7 @@
 import { watch } from 'chokidar'
 import fs from 'fs/promises'
 import { resolve } from 'path'
-import ts from 'typescript-compiler-api'
+import { compilerVersionMajorMinor } from './compiler.mjs'
 import { getConfigWithDefaultValues, readConfig } from '../../config/src/config.mjs'
 import type { GeneratorConfig, GeneratorConfigWithDefaultValues } from '../../config/src/types.mjs'
 import type { BaseTranslation } from '../../runtime/src/index.mjs'
@@ -110,7 +110,7 @@ export const startGenerator = async (config?: GeneratorConfig, watchFiles = true
 	const configWithDefaultValues = await getConfigWithDefaultValues(parsedConfig)
 	const { outputPath } = configWithDefaultValues
 
-	const version = parseTypescriptVersion(ts.versionMajorMinor)
+	const version = parseTypescriptVersion(compilerVersionMajorMinor)
 	configureOutputHandler(configWithDefaultValues, version)
 
 	const onChange = parseAndGenerate.bind(null, configWithDefaultValues, version)
@@ -121,7 +121,7 @@ export const startGenerator = async (config?: GeneratorConfig, watchFiles = true
 
 	logger.info(
 		`generating files for ${
-			shouldGenerateJsDoc ? 'JavaScript with JSDoc notation' : `TypeScript version: '${ts.versionMajorMinor}.x'`
+			shouldGenerateJsDoc ? 'JavaScript with JSDoc notation' : `TypeScript version: '${compilerVersionMajorMinor}.x'`
 		}`,
 	)
 	logger.info(`options:`, parsedConfig)

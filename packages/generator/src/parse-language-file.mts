@@ -1,9 +1,9 @@
 import { resolve, sep } from 'path'
 import { isTruthy } from 'typesafe-utils'
-import ts from 'typescript-compiler-api'
 import type { OutputFormats } from '../../config/src/types.mjs'
 import type { Locale } from '../../runtime/src/core.mjs'
 import type { BaseTranslation } from '../../runtime/src/index.mjs'
+import { compileLocale } from './compiler.mjs'
 import { fileEnding } from './output-handler.mjs'
 import {
 	containsFolders,
@@ -82,16 +82,7 @@ const transpileTypescriptFiles = async (
 	tempPath: string,
 	typesFileName: string,
 ): Promise<string> => {
-	const program = ts.createProgram([languageFilePath], {
-		outDir: tempPath,
-		allowJs: true,
-		resolveJsonModule: true,
-		skipLibCheck: true,
-		sourceMap: false,
-		noLib: true,
-	})
-
-	program.emit()
+	await compileLocale(languageFilePath, tempPath)
 
 	const baseTranslationPath = await detectLocationOfCompiledBaseTranslation(
 		outputPath,

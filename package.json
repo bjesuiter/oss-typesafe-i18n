@@ -144,7 +144,8 @@
 		"-- OTHER -----------------------------------------------": "",
 		"lint-staged": "lint-staged",
 		"prepare": "husky install",
-		"test:package": "node scripts/test-package.mjs"
+		"test:package": "node scripts/test-package.mjs",
+		"benchmark:generator": "node scripts/benchmark-generator.mjs"
 	},
 	"devDependencies": {
 		"@size-limit/preset-small-lib": "^8.2.6",
@@ -183,6 +184,6 @@
 	},
 	"packageManager": "pnpm@8.6.7",
 	"dependencies": {
-		"typescript-compiler-api": "npm:typescript@5.9.3"
+		"typescript-native": "npm:typescript@7.0.2"
 	}
 }

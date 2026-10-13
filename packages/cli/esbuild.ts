@@ -18,7 +18,7 @@ const ctx = await context({
 	bundle: true,
 	outfile: getPath('../../cli/typesafe-i18n.mjs'),
 	platform: 'node',
-	external: ['typescript-compiler-api'],
+	external: ['typescript-native'],
 	banner: {
 		js: `#!/usr/bin/env node
 import { createRequire } from 'module'

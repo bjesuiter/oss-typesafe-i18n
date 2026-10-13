@@ -17,9 +17,9 @@
     "type-fest": "^3.13.1",
     "typesafe-utils": "^1.16.2",
     "typescript": "^5.1.6",
-    "typescript-compiler-api": "npm:typescript@5.9.3",
     "uvu": "^0.5.6",
-    "watchlist": "^0.3.1"
+    "watchlist": "^0.3.1",
+    "typescript-native": "npm:typescript@7.0.2"
   },
   "type": "module"
 }
