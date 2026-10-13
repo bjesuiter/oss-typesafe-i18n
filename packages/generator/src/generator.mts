@@ -1,7 +1,7 @@
 import { watch } from 'chokidar'
 import fs from 'fs/promises'
 import { resolve } from 'path'
-import ts from 'typescript'
+import ts from 'typescript-compiler-api'
 import { getConfigWithDefaultValues, readConfig } from '../../config/src/config.mjs'
 import type { GeneratorConfig, GeneratorConfigWithDefaultValues } from '../../config/src/types.mjs'
 import type { BaseTranslation } from '../../runtime/src/index.mjs'

@@ -18,6 +18,8 @@ In order to get get full typesafety for your locales, you can start the generato
 
 Make sure you have installed `node` version `> 12.x` and are using a `typescript` version `>= 3.5.1`.
 
+The generator uses its own pinned TypeScript 5.9.3 compiler API to read locale files. Your project can use TypeScript 7 without providing the legacy JavaScript compiler API. Locale files must use syntax supported by TypeScript 5.9.3.
+
  > The generator will create a different output depending on your TypeScript version. Older versions don't support all the features `typesafe-i18n` need to provide you with the best types. Make sure to use a TypeScript version `> 4.1.x` to benefit from all the typechecking features.
 
 Start the generator process in your terminal:

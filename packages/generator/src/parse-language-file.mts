@@ -1,6 +1,6 @@
 import { resolve, sep } from 'path'
 import { isTruthy } from 'typesafe-utils'
-import ts from 'typescript'
+import ts from 'typescript-compiler-api'
 import type { OutputFormats } from '../../config/src/types.mjs'
 import type { Locale } from '../../runtime/src/core.mjs'
 import type { BaseTranslation } from '../../runtime/src/index.mjs'

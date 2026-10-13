@@ -11,6 +11,9 @@ importers:
       solid-js:
         specifier: '>=1.0.0'
         version: 1.7.9
+      typescript-compiler-api:
+        specifier: npm:typescript@5.9.3
+        version: /typescript@5.9.3
     devDependencies:
       '@size-limit/preset-small-lib':
         specifier: ^8.2.6
@@ -303,6 +306,9 @@ importers:
       typescript:
         specifier: ^5.1.6
         version: 5.1.6
+      typescript-compiler-api:
+        specifier: npm:typescript@5.9.3
+        version: /typescript@5.9.3
       uvu:
         specifier: ^0.5.6
         version: 0.5.6
@@ -322,7 +328,7 @@ importers:
         specifier: ^6.6.7
         version: 6.6.7
       typesafe-i18n:
-        specifier: workspace:*
+        specifier: workspace:@bjesuiter/typesafe-i18n@*
         version: link:../../../..
       vue:
         specifier: 3.2.39
@@ -3544,6 +3550,11 @@ packages:
     engines: {node: '>=14.17'}
     hasBin: true
     dev: true
+
+  /typescript@5.9.3:
+    resolution: {integrity: sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw==}
+    engines: {node: '>=14.17'}
+    hasBin: true
 
   /untildify@4.0.0:
     resolution: {integrity: sha512-KK8xQ1mkzZeg9inewmFVDNkg3l5LUhoq9kN6iWYB/CC9YMG8HA+c1Q8HwDe6dEX7kErrEVNVBO3fWsVq5iDgtw==}

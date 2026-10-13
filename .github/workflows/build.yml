@@ -28,3 +28,6 @@ jobs:
 
          - name: build package
            run: pnpm build
+
+         - name: test packed CLI with TypeScript 7
+           run: pnpm test:package

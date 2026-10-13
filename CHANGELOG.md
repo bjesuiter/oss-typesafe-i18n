@@ -2,6 +2,13 @@
 
 # Version 5
 
+## 5.27.1-bjesuiter.1 (2026-10-13)
+
+### Fixed
+
+* Give the generator its own pinned TypeScript 5.9.3 compiler API so generation and watch mode work in projects using TypeScript 7.
+* Test the packed CLI alongside TypeScript 7, including generated argument types and watched locale changes.
+
 ## [5.27.1](https://github.com/codingcommons/typesafe-i18n/compare/5.27.0...5.27.1) (2026-02-11)
 
 

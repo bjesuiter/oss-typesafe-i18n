@@ -1,6 +1,6 @@
 {
-	"name": "typesafe-i18n",
-	"version": "5.27.1",
+	"name": "@bjesuiter/typesafe-i18n",
+	"version": "5.27.1-bjesuiter.1",
 	"description": "A fully type-safe and lightweight internationalization library for all your TypeScript and JavaScript projects.",
 	"author": "ivanhofer",
 	"homepage": "https://github.com/codingcommons/typesafe-i18n",
@@ -143,7 +143,8 @@
 		"link-typedefinitions": "tsx ./packages/link-typedefinitions.ts",
 		"-- OTHER -----------------------------------------------": "",
 		"lint-staged": "lint-staged",
-		"prepare": "husky install"
+		"prepare": "husky install",
+		"test:package": "node scripts/test-package.mjs"
 	},
 	"devDependencies": {
 		"@size-limit/preset-small-lib": "^8.2.6",
@@ -180,5 +181,8 @@
 		"type": "github",
 		"url": "https://github.com/sponsors/ivanhofer"
 	},
-	"packageManager": "pnpm@8.6.7"
+	"packageManager": "pnpm@8.6.7",
+	"dependencies": {
+		"typescript-compiler-api": "npm:typescript@5.9.3"
+	}
 }
